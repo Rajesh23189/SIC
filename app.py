@@ -39,7 +39,16 @@ def solar_intensity(cloud_cover):
     return round(SOLAR_CONSTANT * (1 - cloud_cover / 100), 2)
 
 def calculate_energy(intensity, daylight):
-    return round((intensity * daylight * 3600) / 1_000_000, 2)  # MWh
+    """
+    intensity: W/m²
+    daylight: hours of sunlight
+    returns: energy in kWh per m² per day
+    """
+    # Energy in Wh/m²
+    energy_wh = intensity * daylight  # 1 W × 1 hour = 1 Wh
+    # Convert to kWh/m²
+    energy_kwh = energy_wh / 1000
+    return round(energy_kwh, 3)
 
 # --- API Calls ---
 @lru_cache(maxsize=512)
