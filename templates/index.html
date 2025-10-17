@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⚡ Solar Energy Calculator</title>
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background: #f7f9fc;
+        color: #333;
+    }
+    header {
+        background: #f39c12;
+        color: #fff;
+        padding: 20px 0;
+        text-align: center;
+    }
+    header h1 { margin: 0; font-size: 2rem; }
+    main { padding: 20px; max-width: 1200px; margin: auto; }
+    section { margin-bottom: 40px; }
+    h2 { margin-bottom: 15px; color: #f39c12; }
+    form input, form button {
+        padding: 10px;
+        margin: 5px;
+        font-size: 1rem;
+    }
+    form button {
+        background: #f39c12;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+    }
+    form button:hover { background: #d87e00; }
+    .result-box {
+        background: #fff3e0;
+        padding: 15px;
+        border-radius: 5px;
+        margin-top: 15px;
+    }
+    table {
+        border-collapse: collapse;
+        width: 100%;
+        background: #fff;
+    }
+    table, th, td { border: 1px solid #ddd; }
+    th, td { padding: 10px; text-align: center; }
+    th { background: #f39c12; color: #fff; }
+    .graph-container { margin-top: 20px; }
+    #current-location button {
+        padding: 10px 15px;
+        font-size: 1rem;
+        background: #27ae60;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+        border-radius: 4px;
+    }
+    #current-location button:hover { background: #1e8449; }
+    #location-status { margin-top: 10px; font-weight: bold; }
+
+    /* --- Features Section Styling --- */
+    .feature-card {
+        background: linear-gradient(135deg, #f39c12, #f1c40f);
+        color: #fff;
+        padding: 20px;
+        border-radius: 12px;
+        text-align: center;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        transition: transform 0.4s, box-shadow 0.4s, filter 0.4s;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+    .feature-card h3 {
+        margin-bottom: 10px;
+        text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+        font-size: 1.2rem;
+    }
+    .feature-card p {
+        font-weight: 500;
+    }
+    .feature-card:hover {
+        transform: scale(1.08) rotateZ(1deg);
+        box-shadow: 0 12px 30px rgba(0,0,0,0.3);
+        filter: brightness(1.1);
+    }
+    .feature-card::before {
+        content: "";
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle at center, rgba(255,255,255,0.2), transparent 70%);
+        transform: rotate(45deg);
+        transition: transform 0.5s;
+    }
+    .feature-card:hover::before {
+        transform: rotate(0deg);
+    }
+</style>
+</head>
+<body>
+
+<header>
+    <h1>⚡ Solar Energy Calculator 🌞</h1>
+</header>
+
+<main>
+
+    <!-- Home / Input Form -->
+    <section id="home">
+        <h2>Enter Your Location</h2>
+        <form method="POST">
+            <input type="text" name="latitude" placeholder="Latitude" required>
+            <input type="text" name="longitude" placeholder="Longitude" required>
+            <input type="text" name="region" placeholder="Region (optional)">
+            <button type="submit">Calculate</button>
+        </form>
+
+        {% if result %}
+        <div class="result-box">
+            {% if result.error %}
+                <p style="color:red">{{ result.error }}</p>
+            {% else %}
+                <p><strong>Region:</strong> {{ result.region }}</p>
+                <p><strong>Date:</strong> {{ result.date }} | <strong>Time:</strong> {{ result.time }}</p>
+                <p><strong>Temperature:</strong> {{ result.temp }}°C</p>
+                <p><strong>Cloud Cover:</strong> {{ result.cloud }}%</p>
+                <p><strong>Solar Intensity:</strong> {{ result.intensity }} W/m²</p>
+                <p><strong>Daylight Hours:</strong> {{ result.daylight }}</p>
+                <p><strong>Estimated Energy:</strong> {{ result.energy }} MWh</p>
+            {% endif %}
+        </div>
+        {% endif %}
+    </section>
+
+    <!-- Current Location Section -->
+    <section id="current-location">
+        <h2>Use Current Location</h2>
+        <button type="button" onclick="getCurrentLocation()">Get My Location</button>
+        <p id="location-status"></p>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features">
+        <h2>Project Features</h2>
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+            <div class="feature-card">
+                <h3>🌞 Real-time Solar Data</h3>
+                <p>Fetches temperature, cloud cover, and solar intensity for any location.</p>
+            </div>
+            <div class="feature-card">
+                <h3>⚡ Energy Estimation</h3>
+                <p>Calculates expected solar energy output in MWh based on daylight hours.</p>
+            </div>
+            <div class="feature-card">
+                <h3>🏙️ Top Regions</h3>
+                <p>Displays top 10 regions producing maximum solar energy.</p>
+            </div>
+            <div class="feature-card">
+                <h3>📊 Interactive Graphs</h3>
+                <p>Visualize energy vs temperature, cloud effects, and daylight hours with Plotly.</p>
+            </div>
+            <div class="feature-card">
+                <h3>📍 Automatic Location</h3>
+                <p>Use your current location to calculate energy without typing coordinates.</p>
+            </div>
+            <div class="feature-card">
+                <h3>💾 User Queries Saved</h3>
+                <p>All user requests are stored for future analysis and trend tracking.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Top Regions Table -->
+    {% if top_regions %}
+    <section id="top-regions">
+        <h2>Top 10 Regions by Energy</h2>
+        {{ top_regions | safe }}
+    </section>
+    {% endif %}
+
+    <!-- Graphs -->
+    {% if graphs %}
+    <section id="graphs">
+        <h2>Graphs</h2>
+        {% for title, graph_html in graphs.items() %}
+        <div class="graph-container">
+            <h3>{{ title }}</h3>
+            {{ graph_html | safe }}
+        </div>
+        {% endfor %}
+    </section>
+    {% endif %}
+
+</main>
+
+<script>
+function getCurrentLocation() {
+    const status = document.getElementById('location-status');
+
+    if (!navigator.geolocation) {
+        status.textContent = 'Geolocation is not supported by your browser.';
+        return;
+    }
+
+    status.textContent = 'Locating…';
+
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+            const lat = position.coords.latitude.toFixed(6);
+            const lon = position.coords.longitude.toFixed(6);
+            status.textContent = `Latitude: ${lat}, Longitude: ${lon}`;
+            document.querySelector('input[name="latitude"]').value = lat;
+            document.querySelector('input[name="longitude"]').value = lon;
+        },
+        () => {
+            status.textContent = 'Unable to retrieve your location.';
+        }
+    );
+}
+</script>
+
+</body>
+</html>
